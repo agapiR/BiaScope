@@ -1,0 +1,5 @@
+{
+	"sensitive_attrs" : ["gender"],
+	"sensitive_attrs_vals": ["0", "1"],
+	"k_s": ["1", "2", "3", "4"]
+}
