@@ -73,7 +73,8 @@ def draw_network(G, scores, focal, fairness_notion='Individual (InFoRM)',
             size=11,
             line_width=2))
 
-    # focal node pop-out
+    # Focal Node pop-out
+    # focal is an 1-hot vector
     node_trace.marker.line['color'] = ['#de2d26' if f==1 else '#696969' for f in focal]
     node_trace.marker.line['width'] = [4 if f==1 else 2 for f in focal]
     node_trace.marker.size = [18 if f==1 else 11 for f in focal]
@@ -133,6 +134,7 @@ def draw_network(G, scores, focal, fairness_notion='Individual (InFoRM)',
                     showlegend=False,
                     hovermode='closest',
                     dragmode='select',
+                    clickmode='select',
                     uirevision=True,
                     margin=dict(b=20,l=5,r=5,t=40),
                     annotations=[ dict(
@@ -194,7 +196,8 @@ def draw_embedding_2dprojection(G, projections, scores, focal, fairness_notion='
             size=11,
             line_width=2))
 
-    # focal node pop-out
+    # Focal Node pop-out
+    # focal is an 1-hot vector
     mark_trace.marker.line['color'] = ['#de2d26' if f==1 else '#696969' for f in focal]
     mark_trace.marker.line['width'] = [4 if f==1 else 2 for f in focal]
     mark_trace.marker.size = [18 if f==1 else 11 for f in focal]
@@ -241,8 +244,11 @@ def draw_embedding_2dprojection(G, projections, scores, focal, fairness_notion='
                 for i,n in enumerate(G.nodes())]
     mark_trace.text = mark_text
 
-    min_x = np.abs(np.min(projections[0]))
-    min_y = np.abs(np.min(projections[1]))
+    delta_x = np.abs(np.max(projections[0]) - np.min(projections[0]))
+    delta_y = np.abs(np.max(projections[1]) - np.min(projections[1]))
+    padding_x = delta_x*0.05
+    padding_y = delta_y*0.05
+    padding = max(padding_x, padding_y)
     fig = go.Figure(data=mark_trace,
                 layout=go.Layout(
                     title="2D projection of node embeddings ({})".format(type),
@@ -250,14 +256,15 @@ def draw_embedding_2dprojection(G, projections, scores, focal, fairness_notion='
                     showlegend=False,
                     hovermode='closest',
                     dragmode='select',
+                    clickmode='select',
                     margin=dict(b=20,l=5,r=5,t=40),
                     annotations=[ dict(
                         text="",
                         showarrow=False,
                         xref="paper", yref="paper",
                         x=0.005, y=-0.002 ) ],
-                    xaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[np.min(projections[0])-min_x, np.max(projections[0])+min_x]),
-                    yaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[np.min(projections[1])-min_y, np.max(projections[1])+min_y])
+                    xaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[np.min(projections[0])-padding, np.max(projections[0])+padding]),
+                    yaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[np.min(projections[1])-padding, np.max(projections[1])+padding])
                     )
                 )
 
@@ -278,7 +285,7 @@ def draw_embedding_2dprojection(G, projections, scores, focal, fairness_notion='
     return fig
 
 
-def draw_2d_scale(array2d_outer, array2d_inner):
+def draw_2d_scale(array2d_outer, array2d_inner, show_inner=False):
     
     # outer rectangle corners
     X_min = np.min(array2d_outer[0])
@@ -292,31 +299,56 @@ def draw_2d_scale(array2d_outer, array2d_inner):
     y_min = np.min(array2d_inner[1])
     y_max = np.max(array2d_inner[1])
 
-    selection_color = 'rgba(255, 0, 0, 0.3)'
     fig = go.Figure(go.Scatter(
         x=[x_min, x_min, x_max, x_max, x_min], y=[y_min, y_max, y_max, y_min, y_min], 
-        fill="toself",
-        fillcolor = selection_color,
+        #fill="toself",
+        name = "displayed area",
+        hoverinfo='none',
+        fillcolor = 'rgba(255, 0, 0, 0.3)',
         marker=dict(
             size=1,
             line_width=0,
-            color=selection_color)
+            color='rgba(255, 0, 0, 0.3)')
             )
         )
 
-    fig.update_xaxes(range=[X_min, X_max])
-    fig.update_yaxes(range=[Y_min, Y_max])
+    # fig.update_xaxes(range=[X_min, X_max])
+    # fig.update_yaxes(range=[Y_min, Y_max])
 
     # Create scatter trace of the outer array points
     fig.add_trace(go.Scatter(
         x=array2d_outer[0], y=array2d_outer[1],
         mode='markers',
+        hoverinfo='none',
+        name = "all points",
         marker=dict(
             size=1,
             line_width=0,
-            color='#000000')
+            color= '#000000' )
             )
         )
+
+    # Create scatter trace of the selected array points, if given.
+    if show_inner:
+        fig.add_trace(go.Scatter(
+            x=array2d_inner[0], y=array2d_inner[1],
+            mode='markers',
+            hoverinfo='none',
+            name = "displayed points",
+            marker=dict(
+                size=2,
+                line_width=0,
+                color='rgba(255, 0, 0, 1)')
+                )
+            )
+
+    fig.layout=go.Layout(
+                title="",
+                titlefont_size=16,
+                margin=dict(b=20,l=5,r=5,t=40),
+                xaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[X_min, X_max]),
+                yaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[Y_min, Y_max])
+                )
 
     return fig
 
@@ -388,8 +420,7 @@ def get_egoNet(G, node, k=1):
     return ego_net,[idx for idx in ego_net.nodes()]
 
 def get_induced_subgraph(G, node_list):
-    return G.subgraph(node_list)
-
+    return nx.induced_subgraph(G, node_list)
 
 
 def load_network(G, path_node_features, path_fairness_scores, fairness_notion, params, 

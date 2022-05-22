@@ -620,8 +620,6 @@ def updateView(graph_data, node_features, node_score_list,
     if selectedRow:
         focalNodeIdx = selectedRow[0]
         focal_node = node_ids[focalNodeIdx]
-        #print("\nSELECTED ROW = {}\n".format(selectedRow[0]))
-        #print("FOCAL NODE = {}\n".format(focal_node))
     else:
         focal_node = node_ids[np.argmax(scores)]
 
@@ -635,8 +633,13 @@ def updateView(graph_data, node_features, node_score_list,
         attributes = [0 if n==focal_node else distance_dict[n] for n in local_network]
     # focal node(s) list
     focal = [1 if idx==focal_node else 0 for idx in local_ids]
+    # get scores of local nodes
 
-    local_scores = scores[[int(idx) for idx in local_ids]]
+    local_scores = []
+    for idx in local_ids:
+        slice = node_score_df.loc[node_score_df['Node IDs'] == idx]
+        local_scores.append(slice['Scores'].to_list()[0])
+
     local_projections_x = np.array([float(node_features[idx]['proj_x']) for idx in local_ids])
     local_projections_y = np.array([float(node_features[idx]['proj_y']) for idx in local_ids])
     local_projections = np.vstack((local_projections_x,local_projections_y))
@@ -661,7 +664,7 @@ def updateView(graph_data, node_features, node_score_list,
     projections_x = np.array([float(node_features[idx]['proj_x']) for idx in node_features.keys()])
     projections_y = np.array([float(node_features[idx]['proj_y']) for idx in node_features.keys()])
     projections = np.vstack((projections_x,projections_y))
-    figScale = draw_2d_scale(projections, local_projections)
+    figScale = draw_2d_scale(projections, local_projections, show_inner=True)
 
     return figGraph, figEmb, figScale
 
