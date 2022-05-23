@@ -12,6 +12,18 @@ import random
 import time
 # Unfairness scores
 
+def get_dict_node_id2idx(G):        
+    dict_node_id2idx = {}
+    for i,v in enumerate(G.nodes()):
+        dict_node_id2idx[v] = i
+    return dict_node_id2idx
+
+def get_dict_node_idx2id(G):        
+    dict_node_idx2id = {}
+    for i,v in enumerate(G.nodes()):
+        dict_node_idx2id[i] = v
+    return dict_node_idx2id
+
 def unfairness_score(Y, W, node_idx):
     '''
         Calculates the unfairness score for node 'node_idx' where Y is the nxd embedding matrix and W
@@ -86,7 +98,7 @@ def recommended_nodes(Y,W,node_idx,k):
 
     return rho_u      
 
-def group_unfairness_score(Y, W, node_idx, node_features, S, z, k):
+def group_unfairness_score(G, Y, W, node_idx, node_features, S, z, k):
     '''
         Calculates the group unfairness score for node 'node_idx' where Y is the nxd embedding matrix, W
         is the weighted adjacency matrix, S is a sensitive attribute and z an attribute value for S. 
@@ -97,26 +109,35 @@ def group_unfairness_score(Y, W, node_idx, node_features, S, z, k):
             - rho(u) is the set of recommended nodes
             - rho_z(u) = {v : v in rho(u) and attr(v,S)=z}
     '''
-    rho_u = recommended_nodes(Y,W,node_idx,k)
+    rho_u_idx = recommended_nodes(Y,W,node_idx,k)
 
     # get the number of values of attribute S
     nr_Svalues = len(np.unique(node_features[:,S]))
 
+    # convert list of idx to id
+    dict_node_idx2id = {}
+    dict_node_idx2id = get_dict_node_idx2id(G)
+    rho_u_id = []
+    for rec_idx in rho_u_idx:
+        rho_u_id.append(rec_idx)
+
     # added list(node_features[:,0]).index(v) to avoid out of index  
     # accesses for nodes that do not have an S feature value
     # node_features is not ordered
-    rho_u_z = [v for v in rho_u if v in list(node_features[:,0]) and node_features[list(node_features[:,0]).index(v),S] == z]  #  attr(v,S) == z
+    
 
-    if rho_u == []:
+    rho_u_z = [v for v in rho_u_id if v in list(node_features[:,0]) and node_features[list(node_features[:,0]).index(v),S] == z]  #  attr(v,S) == z
+
+    if rho_u_id == []:
         # check if assigning 0 for this case makes sense
         z_share_u = 0
     else:
-        z_share_u = len(rho_u_z)/len(rho_u)
+        z_share_u = len(rho_u_z)/len(rho_u_id)
 
     return 1/nr_Svalues - z_share_u
 
-def group_unfairness_scores(Y, W, node_features, S, z, k):
-    return [group_unfairness_score(Y, W, i, node_features, S, z, k) for i in range(len(Y))]
+def group_unfairness_scores(G, Y, W, node_features, S, z, k):
+    return [group_unfairness_score(G, Y, W, i, node_features, S, z, k) for i in range(len(Y))]
 
 def load_network(G, path_node_features, path_fairness_scores, fairness_notion, params, 
                 title="Local Graph Topology", show_scale = True):
