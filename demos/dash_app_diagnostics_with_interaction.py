@@ -1,6 +1,7 @@
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 import sys
+import os
 import dash
 from dash import Dash, html, dcc, Input, Output, State, callback, dash_table
 import dash_bootstrap_components as dbc
@@ -13,13 +14,13 @@ import json
 import time
 from urllib import parse
 
-
 sys.path.insert(0, './../')
 from utilities_with_interaction import (get_egoNet,
                                         get_induced_subgraph,
                                         draw_network,
                                         draw_embedding_2dprojection,
-                                        draw_2d_scale,
+                                        draw_2d_scale, 
+                                        get_recommended_nodes,
                                         get_scores,
                                         get_node_features)
 
@@ -170,7 +171,7 @@ diagnostics_layout = html.Div(
                             html.Span("Number of nodes recommended to each target node", className="tooltiptext"),
                             className="fa fa-question-circle tooltip"),
                         html.Div([
-                            dcc.Slider(id='kVal_d', min=1, max=4, step=1, value=1)
+                            dcc.Slider(min=5, max=25, step=5, value=5, id='kVal_d')
                         ],style={'width':'150px','height':'11px','display': 'inline-block','vertical-align': 'middle','padding-top': '0px'})
                     ],id='groupFairnessParams_d',style={'display': 'none'})
                 ])
@@ -324,8 +325,22 @@ def store_node_features(network_name, embedding_name):
                                                                                                         embedding_name,
                                                                                                         network_name,
                                                                                                         embedding_name)
+    # Configure data sources
+    recommended_nodes_dir = '../embeddings/{}/{}/{}_{}_64_embedding_recommended_nodes.csv'.format(network_name,
+                                                                                            embedding_name,
+                                                                                            network_name,
+                                                                                            embedding_name)
+
     # read preprocessed data
     node_features = get_node_features(preprocessed_data_dir)
+
+    if os.path.exists(recommended_nodes_dir):
+        recommended_nodes = get_recommended_nodes(recommended_nodes_dir)
+        for node in node_features.keys():
+            try: 
+                node_features[node]["recommended"] = [node]+recommended_nodes[node]
+            except:
+                node_features[node]["recommended"] = [node]
 
     return node_features
 
@@ -357,7 +372,7 @@ def store_node_score_list(networkDropdown, embeddingDropdown,
                                                                                                 embeddingDropdown)
 
     if fairnessNotion=='Group (Fairwalk)':
-        params = {"attribute": sensitiveAttr, "value": sensitiveAttrVal, "k": kVal}
+        params = {"attribute": sensitiveAttr, "value": sensitiveAttrVal, "k": str(kVal)}
         node_to_score = get_scores(fairnessNotion, params, preprocessed_group_fairness_dir)
     else: #'Individual (InFoRM)'
         params = {"nrHops": nrHops}
@@ -409,7 +424,7 @@ def display_fairness_parameters(networkDropdown, fairnessNotion):
         sensitive_attr_value = ''
         sensitive_attr_val_options = []
         sensitive_attr_val_value = ''
-        k_val_value = 1
+        k_val_value = 5
         group_fairness_params_style = {'display': 'none'} 
     else:
         if fairnessNotion == 'Group (Fairwalk)':
@@ -436,7 +451,7 @@ def display_fairness_parameters(networkDropdown, fairnessNotion):
             sensitive_attr_value = ''
             sensitive_attr_val_options = []
             sensitive_attr_val_value = ''
-            k_val_value = 1
+            k_val_value = 5
             group_fairness_params_style = {'display': 'none'}
 
     return fairness_notions, fairness_notions_val, nr_hops_options_value, ind_fairness_params_style, sensitive_attr_options, sensitive_attr_value, sensitive_attr_val_options, sensitive_attr_val_value, k_val_value, group_fairness_params_style
@@ -553,6 +568,7 @@ def updateView(graph_data, node_features, node_score_list,
     if fairnessNotion=='Group (Fairwalk)':
         attribute_type = sensitiveAttr
         hops = 1
+
     else: #'Individual (InFoRM)'
         attribute_type = "graph distance"
         hops = int(nrHops)
@@ -620,23 +636,31 @@ def updateView(graph_data, node_features, node_score_list,
     if selectedRow:
         focalNodeIdx = selectedRow[0]
         focal_node = node_ids[focalNodeIdx]
-        #print("\nSELECTED ROW = {}\n".format(selectedRow[0]))
-        #print("FOCAL NODE = {}\n".format(focal_node))
     else:
         focal_node = node_ids[np.argmax(scores)]
 
     # get local topology and attributes
-    local_network, local_ids = get_egoNet(G, str(focal_node), k=hops)
     if fairnessNotion=='Group (Fairwalk)':
+        recommended = node_features[str(focal_node)]["recommended"]
+        recommended_topk = recommended[0:int(kVal)]
+        local_network, local_ids = get_induced_subgraph(G, recommended_topk)
         attributes = [int(node_features[idx][attribute_type]) for idx in local_ids]
+        topology_title = "Top-{} proximal nodes in the embedding".format(kVal)
         #attributes = [0 if idx==focal_node else 1 for idx in local_ids]
     else: #'Individual (InFoRM)'
+        local_network, local_ids = get_egoNet(G, str(focal_node), k=hops)
         distance_dict = nx.shortest_path_length(local_network, source=focal_node)
         attributes = [0 if n==focal_node else distance_dict[n] for n in local_network]
+        topology_title = "{}-Hop Ego Network".format(hops)
     # focal node(s) list
     focal = [1 if idx==focal_node else 0 for idx in local_ids]
+    # get scores of local nodes
 
-    local_scores = scores[[int(idx) for idx in local_ids]]
+    local_scores = []
+    for idx in local_ids:
+        slice = node_score_df.loc[node_score_df['Node IDs'] == idx]
+        local_scores.append(slice['Scores'].to_list()[0])
+
     local_projections_x = np.array([float(node_features[idx]['proj_x']) for idx in local_ids])
     local_projections_y = np.array([float(node_features[idx]['proj_y']) for idx in local_ids])
     local_projections = np.vstack((local_projections_x,local_projections_y))
@@ -645,7 +669,7 @@ def updateView(graph_data, node_features, node_score_list,
 
     figGraph = draw_network(local_network, local_scores, focal, fairness_notion=fairnessNotion, 
                         attributes=attributes, attribute_type=attribute_type,
-                        title = "{}-Hop Ego Network".format(hops),
+                        title = topology_title,
                         selection_local = selectionGraph, selectedpoints = selectedpoints)
 
     toc = time.perf_counter()
@@ -661,7 +685,7 @@ def updateView(graph_data, node_features, node_score_list,
     projections_x = np.array([float(node_features[idx]['proj_x']) for idx in node_features.keys()])
     projections_y = np.array([float(node_features[idx]['proj_y']) for idx in node_features.keys()])
     projections = np.vstack((projections_x,projections_y))
-    figScale = draw_2d_scale(projections, local_projections)
+    figScale = draw_2d_scale(projections, local_projections, show_inner=True)
 
     return figGraph, figEmb, figScale
 

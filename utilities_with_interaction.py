@@ -12,6 +12,7 @@ import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 from dash import dash_table
 import pandas
+import re
 
 
 import time
@@ -36,7 +37,7 @@ def draw_network(G, scores, focal, fairness_notion='Individual (InFoRM)',
     if nx.density(G)>0.8 and nx.number_of_nodes(G)>25:  # plot at most 25^2 * 0.8 = 500 edges
         edge_length_threshold = np.percentile(np.array(edge_lengths), 95)
     else:
-        edge_length_threshold = np.min(np.array(edge_lengths))
+        edge_length_threshold = 0 #np.min(np.array(edge_lengths))
     for edge in G.edges():
         x0, y0 = nodePos[edge[0]]
         x1, y1 = nodePos[edge[1]]
@@ -73,7 +74,8 @@ def draw_network(G, scores, focal, fairness_notion='Individual (InFoRM)',
             size=11,
             line_width=2))
 
-    # focal node pop-out
+    # Focal Node pop-out
+    # focal is an 1-hot vector
     node_trace.marker.line['color'] = ['#de2d26' if f==1 else '#696969' for f in focal]
     node_trace.marker.line['width'] = [4 if f==1 else 2 for f in focal]
     node_trace.marker.size = [18 if f==1 else 11 for f in focal]
@@ -133,6 +135,7 @@ def draw_network(G, scores, focal, fairness_notion='Individual (InFoRM)',
                     showlegend=False,
                     hovermode='closest',
                     dragmode='select',
+                    #clickmode='select',
                     uirevision=True,
                     margin=dict(b=20,l=5,r=5,t=40),
                     annotations=[ dict(
@@ -194,7 +197,8 @@ def draw_embedding_2dprojection(G, projections, scores, focal, fairness_notion='
             size=11,
             line_width=2))
 
-    # focal node pop-out
+    # Focal Node pop-out
+    # focal is an 1-hot vector
     mark_trace.marker.line['color'] = ['#de2d26' if f==1 else '#696969' for f in focal]
     mark_trace.marker.line['width'] = [4 if f==1 else 2 for f in focal]
     mark_trace.marker.size = [18 if f==1 else 11 for f in focal]
@@ -241,8 +245,11 @@ def draw_embedding_2dprojection(G, projections, scores, focal, fairness_notion='
                 for i,n in enumerate(G.nodes())]
     mark_trace.text = mark_text
 
-    min_x = np.abs(np.min(projections[0]))
-    min_y = np.abs(np.min(projections[1]))
+    delta_x = np.abs(np.max(projections[0]) - np.min(projections[0]))
+    delta_y = np.abs(np.max(projections[1]) - np.min(projections[1]))
+    padding_x = delta_x*0.05
+    padding_y = delta_y*0.05
+    padding = max(padding_x, padding_y)
     fig = go.Figure(data=mark_trace,
                 layout=go.Layout(
                     title="2D projection of node embeddings ({})".format(type),
@@ -250,14 +257,15 @@ def draw_embedding_2dprojection(G, projections, scores, focal, fairness_notion='
                     showlegend=False,
                     hovermode='closest',
                     dragmode='select',
+                    #clickmode='select',
                     margin=dict(b=20,l=5,r=5,t=40),
                     annotations=[ dict(
                         text="",
                         showarrow=False,
                         xref="paper", yref="paper",
                         x=0.005, y=-0.002 ) ],
-                    xaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[np.min(projections[0])-min_x, np.max(projections[0])+min_x]),
-                    yaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[np.min(projections[1])-min_y, np.max(projections[1])+min_y])
+                    xaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[np.min(projections[0])-padding, np.max(projections[0])+padding]),
+                    yaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[np.min(projections[1])-padding, np.max(projections[1])+padding])
                     )
                 )
 
@@ -278,7 +286,7 @@ def draw_embedding_2dprojection(G, projections, scores, focal, fairness_notion='
     return fig
 
 
-def draw_2d_scale(array2d_outer, array2d_inner):
+def draw_2d_scale(array2d_outer, array2d_inner, show_inner=False):
     
     # outer rectangle corners
     X_min = np.min(array2d_outer[0])
@@ -292,33 +300,59 @@ def draw_2d_scale(array2d_outer, array2d_inner):
     y_min = np.min(array2d_inner[1])
     y_max = np.max(array2d_inner[1])
 
-    selection_color = 'rgba(255, 0, 0, 0.3)'
     fig = go.Figure(go.Scatter(
         x=[x_min, x_min, x_max, x_max, x_min], y=[y_min, y_max, y_max, y_min, y_min], 
-        fill="toself",
-        fillcolor = selection_color,
+        #fill="toself",
+        name = "displayed area",
+        hoverinfo='none',
+        fillcolor = 'rgba(255, 0, 0, 0.3)',
         marker=dict(
             size=1,
             line_width=0,
-            color=selection_color)
+            color='rgba(255, 0, 0, 0.3)')
             )
         )
 
-    fig.update_xaxes(range=[X_min, X_max])
-    fig.update_yaxes(range=[Y_min, Y_max])
+    # fig.update_xaxes(range=[X_min, X_max])
+    # fig.update_yaxes(range=[Y_min, Y_max])
 
     # Create scatter trace of the outer array points
     fig.add_trace(go.Scatter(
         x=array2d_outer[0], y=array2d_outer[1],
         mode='markers',
+        hoverinfo='none',
+        name = "all points",
         marker=dict(
             size=1,
             line_width=0,
-            color='#000000')
+            color= '#000000' )
             )
         )
 
+    # Create scatter trace of the selected array points, if given.
+    if show_inner:
+        fig.add_trace(go.Scatter(
+            x=array2d_inner[0], y=array2d_inner[1],
+            mode='markers',
+            hoverinfo='none',
+            name = "displayed points",
+            marker=dict(
+                size=2,
+                line_width=0,
+                color='rgba(255, 0, 0, 1)')
+                )
+            )
+
+    fig.layout=go.Layout(
+                title="",
+                titlefont_size=16,
+                margin=dict(b=20,l=5,r=5,t=40),
+                xaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[X_min, X_max]),
+                yaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[Y_min, Y_max])
+                )
+
     return fig
+
 
 def get_scores(fairness_notion, params, path_fairness_scores):
     # distinguish fairness notion and parameters
@@ -343,7 +377,7 @@ def get_scores(fairness_notion, params, path_fairness_scores):
         with open(path_fairness_scores, "r") as scores_file:
             lines = scores_file.readlines()
             header = lines[0].strip("\n").split(",")
-            node_id_idx = header.index("node_id")
+            node_id_idx = header.index("id")
             attribute_idx = header.index("attribute")
             value_idx = header.index("value")
             k_idx = header.index("k")
@@ -352,7 +386,7 @@ def get_scores(fairness_notion, params, path_fairness_scores):
                 features = [feature.strip() for feature in lines[i].split(',')]
                 if features[attribute_idx] == params["attribute"] and\
                     features[value_idx] == params["value"] and\
-                    features[k_idx] == str(params["k"]):
+                    features[k_idx] == params["k"]:
                     try:
                         node_to_score[features[node_id_idx]] = float(features[group_fairness_score_idx])
                     except:
@@ -375,6 +409,23 @@ def get_node_features(path_node_features):
 
     return node_features
 
+def get_recommended_nodes(path_recommended_nodes):
+    node_to_rec = {}
+    with open(path_recommended_nodes, "r") as rec_file:
+        lines = rec_file.readlines()
+        header = lines[0].strip("\n").split(",")
+        node_id_idx = header.index("id")
+        k_idx = header.index("k")
+        rec_list_idx = header.index("recommended_nodes")
+        for i in range(1, len(lines)):
+            features = [re.sub('\W+','', feature).strip() for feature in lines[i].split(',')]
+            for rec_idx  in range(rec_list_idx-1, len(features)-1): # file has a redundant "," at the end of line
+                try:
+                    node_to_rec[features[node_id_idx]].append(features[rec_idx])
+                except:
+                    node_to_rec[features[node_id_idx]] = []
+    return node_to_rec
+
 def get_egoNet(G, node, k=1):
     '''Returns the k-hop ego net of a node, from node index.
     k: max distance of neighbors from node.'''
@@ -388,9 +439,15 @@ def get_egoNet(G, node, k=1):
     return ego_net,[idx for idx in ego_net.nodes()]
 
 def get_induced_subgraph(G, node_list):
-    return G.subgraph(node_list)
+    '''Returns the induced subgraph, from a list of node indeces.'''
+    tic = time.perf_counter()
 
+    subgraph = nx.induced_subgraph(G, node_list)
 
+    toc = time.perf_counter()
+    #print(f"Calculated the induced subgraph in {toc - tic:0.4f} seconds")
+
+    return subgraph,[idx for idx in subgraph.nodes()]
 
 def load_network(G, path_node_features, path_fairness_scores, fairness_notion, params, 
                 title="Local Graph Topology", show_scale = True):

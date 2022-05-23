@@ -1,0 +1,8 @@
+
+*.csv
+*.pyc
+#*.png
+__pycache__/
+datacache/
+.idea/
+.ipynb_checkpoints/
