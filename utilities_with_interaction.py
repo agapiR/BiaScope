@@ -12,6 +12,7 @@ import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 from dash import dash_table
 import pandas
+import re
 
 
 import time
@@ -36,7 +37,7 @@ def draw_network(G, scores, focal, fairness_notion='Individual (InFoRM)',
     if nx.density(G)>0.8 and nx.number_of_nodes(G)>25:  # plot at most 25^2 * 0.8 = 500 edges
         edge_length_threshold = np.percentile(np.array(edge_lengths), 95)
     else:
-        edge_length_threshold = np.min(np.array(edge_lengths))
+        edge_length_threshold = 0 #np.min(np.array(edge_lengths))
     for edge in G.edges():
         x0, y0 = nodePos[edge[0]]
         x1, y1 = nodePos[edge[1]]
@@ -134,7 +135,7 @@ def draw_network(G, scores, focal, fairness_notion='Individual (InFoRM)',
                     showlegend=False,
                     hovermode='closest',
                     dragmode='select',
-                    clickmode='select',
+                    #clickmode='select',
                     uirevision=True,
                     margin=dict(b=20,l=5,r=5,t=40),
                     annotations=[ dict(
@@ -256,7 +257,7 @@ def draw_embedding_2dprojection(G, projections, scores, focal, fairness_notion='
                     showlegend=False,
                     hovermode='closest',
                     dragmode='select',
-                    clickmode='select',
+                    #clickmode='select',
                     margin=dict(b=20,l=5,r=5,t=40),
                     annotations=[ dict(
                         text="",
@@ -352,6 +353,7 @@ def draw_2d_scale(array2d_outer, array2d_inner, show_inner=False):
 
     return fig
 
+
 def get_scores(fairness_notion, params, path_fairness_scores):
     # distinguish fairness notion and parameters
     if fairness_notion == 'Individual (InFoRM)':
@@ -375,7 +377,7 @@ def get_scores(fairness_notion, params, path_fairness_scores):
         with open(path_fairness_scores, "r") as scores_file:
             lines = scores_file.readlines()
             header = lines[0].strip("\n").split(",")
-            node_id_idx = header.index("node_id")
+            node_id_idx = header.index("id")
             attribute_idx = header.index("attribute")
             value_idx = header.index("value")
             k_idx = header.index("k")
@@ -384,7 +386,7 @@ def get_scores(fairness_notion, params, path_fairness_scores):
                 features = [feature.strip() for feature in lines[i].split(',')]
                 if features[attribute_idx] == params["attribute"] and\
                     features[value_idx] == params["value"] and\
-                    features[k_idx] == str(params["k"]):
+                    features[k_idx] == params["k"]:
                     try:
                         node_to_score[features[node_id_idx]] = float(features[group_fairness_score_idx])
                     except:
@@ -407,6 +409,23 @@ def get_node_features(path_node_features):
 
     return node_features
 
+def get_recommended_nodes(path_recommended_nodes):
+    node_to_rec = {}
+    with open(path_recommended_nodes, "r") as rec_file:
+        lines = rec_file.readlines()
+        header = lines[0].strip("\n").split(",")
+        node_id_idx = header.index("id")
+        k_idx = header.index("k")
+        rec_list_idx = header.index("recommended_nodes")
+        for i in range(1, len(lines)):
+            features = [re.sub('\W+','', feature).strip() for feature in lines[i].split(',')]
+            for rec_idx  in range(rec_list_idx-1, len(features)-1): # file has a redundant "," at the end of line
+                try:
+                    node_to_rec[features[node_id_idx]].append(features[rec_idx])
+                except:
+                    node_to_rec[features[node_id_idx]] = []
+    return node_to_rec
+
 def get_egoNet(G, node, k=1):
     '''Returns the k-hop ego net of a node, from node index.
     k: max distance of neighbors from node.'''
@@ -420,8 +439,15 @@ def get_egoNet(G, node, k=1):
     return ego_net,[idx for idx in ego_net.nodes()]
 
 def get_induced_subgraph(G, node_list):
-    return nx.induced_subgraph(G, node_list)
+    '''Returns the induced subgraph, from a list of node indeces.'''
+    tic = time.perf_counter()
 
+    subgraph = nx.induced_subgraph(G, node_list)
+
+    toc = time.perf_counter()
+    #print(f"Calculated the induced subgraph in {toc - tic:0.4f} seconds")
+
+    return subgraph,[idx for idx in subgraph.nodes()]
 
 def load_network(G, path_node_features, path_fairness_scores, fairness_notion, params, 
                 title="Local Graph Topology", show_scale = True):
