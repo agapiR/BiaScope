@@ -300,16 +300,23 @@ def draw_2d_scale(array2d_outer, array2d_inner, show_inner=False):
     y_min = np.min(array2d_inner[1])
     y_max = np.max(array2d_inner[1])
 
+    delta_x = np.abs(x_min - x_max)
+    delta_y = np.abs(y_min - y_max)
+    padding_x = delta_x*0.05
+    padding_y = delta_y*0.05
+    padding = max(padding_x, padding_y)
+
     fig = go.Figure(go.Scatter(
-        x=[x_min, x_min, x_max, x_max, x_min], y=[y_min, y_max, y_max, y_min, y_min], 
-        #fill="toself",
+        x=[x_min-padding, x_min-padding, x_max+padding, x_max+padding, x_min-padding], 
+        y=[y_min-padding, y_max+padding, y_max+padding, y_min-padding, y_min-padding], 
+        fill="toself",
         name = "displayed area",
         hoverinfo='none',
-        fillcolor = 'rgba(255, 0, 0, 0.3)',
+        fillcolor = 'rgba(255, 0, 0, 0.1)',
         marker=dict(
-            size=1,
+            size=0.3,
             line_width=0,
-            color='rgba(255, 0, 0, 0.3)')
+            color='rgba(255, 0, 0, 1)')
             )
         )
 
@@ -343,9 +350,12 @@ def draw_2d_scale(array2d_outer, array2d_inner, show_inner=False):
                 )
             )
 
+    
     fig.layout=go.Layout(
                 title="",
                 titlefont_size=16,
+                paper_bgcolor='rgb(233, 233, 233,0.3)',
+                #plot_bgcolor='rgba(0,0,0,0)',
                 margin=dict(b=20,l=5,r=5,t=40),
                 xaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[X_min, X_max]),
                 yaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[Y_min, Y_max])
