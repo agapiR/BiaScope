@@ -25,11 +25,11 @@ for i in range(5):
     rho_i = recommended_nodes(Y,W,i,k)
     print('rho_'+str(i),rho_i)
 rho_1 = recommended_nodes(Y,W,1,k)
-unfairness_0 = group_unfairness_score(Y, W, 0, node_features, 1, 0, k)
+unfairness_0 = group_unfairness_score(G, Y, W, 0, node_features, 1, 0, k)
 print('unfairness_0',unfairness_0)
 
 for i in range(5):
-    unfairness_i = group_unfairness_score(Y, W, i, node_features, 1, 0, k)
+    unfairness_i = group_unfairness_score(G, Y, W, i, node_features, 1, 0, k)
     print('unfairness_'+str(i),unfairness_i)
 
 # get attributes

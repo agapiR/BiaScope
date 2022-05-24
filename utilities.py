@@ -35,7 +35,7 @@ def unfairness_score(Y, W, node_idx):
     for j in range(len(Y)):
         if W[node_idx][j] == 0:
             continue 
-        unfairness += np.linalg.norm(Y[node_idx] - Y[j])*W[node_idx][j]
+        unfairness += (np.linalg.norm(Y[node_idx] - Y[j])**2)*W[node_idx][j]
     return unfairness 
 
 def unfairness_scores(Y, W):
@@ -66,7 +66,7 @@ def k_hop_InFoRM_score(Y, G, node_idx, nr_hops):
         # shouldn't the norm be squared?
         # get index from node to access embedding matrix 
         v_idx = list(G.nodes()).index(v)
-        unfairness += np.linalg.norm(Y[node_idx] - Y[v_idx])
+        unfairness += np.linalg.norm(Y[node_idx] - Y[v_idx])**2
     return unfairness 
 
 def k_hop_InFoRM_scores(Y, G, nr_hops):
@@ -115,18 +115,19 @@ def group_unfairness_score(G, Y, W, node_idx, node_features, S, z, k):
     nr_Svalues = len(np.unique(node_features[:,S]))
 
     # convert list of idx to id
-    dict_node_idx2id = {}
+    # dict_node_id2idx = {}
+    dict_node_id2idx = get_dict_node_id2idx(G)
     dict_node_idx2id = get_dict_node_idx2id(G)
     rho_u_id = []
     for rec_idx in rho_u_idx:
-        rho_u_id.append(rec_idx)
+        rho_u_id.append(dict_node_idx2id[rec_idx])
 
     # added list(node_features[:,0]).index(v) to avoid out of index  
     # accesses for nodes that do not have an S feature value
     # node_features is not ordered
     
-
-    rho_u_z = [v for v in rho_u_id if v in list(node_features[:,0]) and node_features[list(node_features[:,0]).index(v),S] == z]  #  attr(v,S) == z
+    
+    rho_u_z = [v for v in rho_u_id if v in list(node_features[:,0]) and node_features[list(node_features[:,0]).index(dict_node_id2idx[v]),S] == z]  #  attr(v,S) == z
 
     if rho_u_id == []:
         # check if assigning 0 for this case makes sense
