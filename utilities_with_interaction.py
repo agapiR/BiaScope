@@ -179,13 +179,6 @@ def draw_embedding_2dprojection(G, projections, scores, focal, fairness_notion='
                     type="TSNE",
                     selection_local = None, selectedpoints = None):
 
-    # if type=="TSNE":
-    #     tsne = TSNE(n_components=2, random_state=0)
-    #     projections = tsne.fit_transform(embedding)
-    # elif type=="UMAP":
-    #     umap_2d = UMAP(n_components=2, init='random', random_state=0)
-    #     projections = umap_2d.fit_transform(embedding)
-
     mark_trace = go.Scatter(
         x=list(projections[0]), y=list(projections[1]),
         mode='markers',
@@ -305,7 +298,6 @@ def draw_2d_scale(array2d_outer, array2d_inner, show_inner=False):
     padding_x = delta_x*0.05
     padding_y = delta_y*0.05
     padding = max(padding_x, padding_y)
-
     fig = go.Figure(go.Scatter(
         x=[x_min-padding, x_min-padding, x_max+padding, x_max+padding, x_min-padding], 
         y=[y_min-padding, y_max+padding, y_max+padding, y_min-padding, y_min-padding], 
@@ -319,7 +311,7 @@ def draw_2d_scale(array2d_outer, array2d_inner, show_inner=False):
             color='rgba(255, 0, 0, 1)')
             )
         )
-
+        
     # fig.update_xaxes(range=[X_min, X_max])
     # fig.update_yaxes(range=[Y_min, Y_max])
 
@@ -350,18 +342,23 @@ def draw_2d_scale(array2d_outer, array2d_inner, show_inner=False):
                 )
             )
 
-    
+    delta_X = np.abs(X_min - X_max)
+    delta_Y = np.abs(Y_min - Y_max)
+    padding_X = delta_X*0.05
+    padding_Y = delta_Y*0.05
     fig.layout=go.Layout(
                 title="",
                 titlefont_size=16,
                 paper_bgcolor='rgb(233, 233, 233,0.3)',
-                #plot_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(255, 255, 255, 1)', # transparent: rgba(0, 0, 0)
                 margin=dict(b=20,l=5,r=5,t=40),
-                xaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[X_min, X_max]),
-                yaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[Y_min, Y_max])
+                xaxis=dict(showgrid=True, gridcolor='#d3d3d3', zeroline=False, showticklabels=True, range=[X_min-padding_X, X_max+padding_X]),
+                yaxis=dict(showgrid=True, gridcolor='#d3d3d3', zeroline=False, showticklabels=True, range=[Y_min-padding_Y, Y_max+padding_Y])
                 )
 
     return fig
+
+
 
 
 def get_scores(fairness_notion, params, path_fairness_scores):
@@ -459,14 +456,10 @@ def get_induced_subgraph(G, node_list):
 
     return subgraph,[idx for idx in subgraph.nodes()]
 
+
+
 def load_network(G, path_node_features, path_fairness_scores, fairness_notion, params, 
                 title="Local Graph Topology", show_scale = True):
-    #def load_network(edgelist_file, node_features_file):
-    #G = nx.read_edgelist(path)
-    W = nx.to_numpy_array(G)
-    #node_features = np.loadtxt(open(path_node_features, "rb"), delimiter=",", skiprows=1).astype(int)
-
-    # pos = nx.get_node_attributes(G2,'pos')
 
     # read in node features 
     node_features = {}
@@ -528,10 +521,6 @@ def load_network(G, path_node_features, path_fairness_scores, fairness_notion, p
         hoverinfo='text',
         marker=dict(
             showscale=show_scale,
-            # colorscale options
-            #'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
-            #'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
-            #'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
             colorscale='Reds',
             reversescale=False,
             cmin=val_min,
@@ -552,48 +541,7 @@ def load_network(G, path_node_features, path_fairness_scores, fairness_notion, p
         node_adjacencies.append(len(adjacencies[1]))
         node_text.append('# of connections: '+str(len(adjacencies[1])))
 
-    #node_trace.marker.color = node_adjacencies
-    #node_trace.text = node_text
-    # distinguish fairness notion and parameters
     node_to_score = get_scores(fairness_notion, params, path_fairness_scores)
-    # if fairness_notion == 'Individual (InFoRM)':
-    #     node_to_score = {}
-    #     with open(path_fairness_scores, "r") as scores_file:
-    #         lines = scores_file.readlines()
-    #         header = lines[0].strip("\n").split(",")
-    #         node_id_idx = header.index("id")
-    #         nr_hops_idx = header.index("nr_hops")
-    #         InFoRM_hops_idx = header.index("InFoRM_hops")
-    #         for i in range(1, len(lines)):
-    #             features = [feature.strip() for feature in lines[i].split(',')]
-    #             if int(features[nr_hops_idx]) == params["nrHops"]:
-    #                 try:
-    #                     node_to_score[features[node_id_idx]] = float(features[InFoRM_hops_idx])
-    #                 except:
-    #                     print(features)
-    #                     node_to_score[features[node_id_idx]] = 0.0
-    #     scores = [node_to_score[node] for node in G.nodes()]
-
-    # else:
-    #     node_to_score = {}
-    #     with open(path_fairness_scores, "r") as scores_file:
-    #         lines = scores_file.readlines()
-    #         header = lines[0].strip("\n").split(",")
-    #         node_id_idx = header.index("node_id")
-    #         attribute_idx = header.index("attribute")
-    #         value_idx = header.index("value")
-    #         k_idx = header.index("k")
-    #         group_fairness_score_idx = header.index("group_fairness_score")
-    #         for i in range(1, len(lines)):
-    #             features = [feature.strip() for feature in lines[i].split(',')]
-    #             if features[attribute_idx] == params["attribute"] and\
-    #                 features[value_idx] == params["value"] and\
-    #                 features[k_idx] == str(params["k"]):
-    #                 try:
-    #                     node_to_score[features[node_id_idx]] = float(features[group_fairness_score_idx])
-    #                 except:
-    #                     print(features)
-    #                     node_to_score[features[node_id_idx]] = 0.0
 
     scores = [node_to_score[node] for node in G.nodes()]
 
