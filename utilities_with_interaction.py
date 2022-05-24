@@ -242,7 +242,11 @@ def draw_embedding_2dprojection(G, projections, scores, focal, fairness_notion='
     delta_y = np.abs(np.max(projections[1]) - np.min(projections[1]))
     padding_x = delta_x*0.05
     padding_y = delta_y*0.05
-    padding = max(padding_x, padding_y)
+    # pad axis to get equal length
+    if delta_x>delta_y:
+        padding_y = ((delta_x-delta_y)+2*padding_x)/2
+    else:
+        padding_x = ((delta_y-delta_x)+2*padding_y)/2
     fig = go.Figure(data=mark_trace,
                 layout=go.Layout(
                     title="2D projection of node embeddings ({})".format(type),
@@ -257,8 +261,8 @@ def draw_embedding_2dprojection(G, projections, scores, focal, fairness_notion='
                         showarrow=False,
                         xref="paper", yref="paper",
                         x=0.005, y=-0.002 ) ],
-                    xaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[np.min(projections[0])-padding, np.max(projections[0])+padding]),
-                    yaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[np.min(projections[1])-padding, np.max(projections[1])+padding])
+                    xaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[np.min(projections[0])-padding_x, np.max(projections[0])+padding_x]),
+                    yaxis=dict(showgrid=True, zeroline=False, showticklabels=True, range=[np.min(projections[1])-padding_y, np.max(projections[1])+padding_y])
                     )
                 )
 
@@ -298,9 +302,14 @@ def draw_2d_scale(array2d_outer, array2d_inner, show_inner=False):
     padding_x = delta_x*0.05
     padding_y = delta_y*0.05
     padding = max(padding_x, padding_y)
+    # pad axis to get equal length
+    if delta_x>delta_y:
+        padding_y = ((delta_x-delta_y)+2*padding_x)/2
+    else:
+        padding_x = ((delta_y-delta_x)+2*padding_y)/2
     fig = go.Figure(go.Scatter(
-        x=[x_min-padding, x_min-padding, x_max+padding, x_max+padding, x_min-padding], 
-        y=[y_min-padding, y_max+padding, y_max+padding, y_min-padding, y_min-padding], 
+        x=[x_min-padding_x, x_min-padding_x, x_max+padding_x, x_max+padding_x, x_min-padding_x], 
+        y=[y_min-padding_y, y_max+padding_y, y_max+padding_y, y_min-padding_y, y_min-padding_y], 
         fill="toself",
         name = "displayed area",
         hoverinfo='none',
@@ -311,7 +320,7 @@ def draw_2d_scale(array2d_outer, array2d_inner, show_inner=False):
             color='rgba(255, 0, 0, 1)')
             )
         )
-        
+
     # fig.update_xaxes(range=[X_min, X_max])
     # fig.update_yaxes(range=[Y_min, Y_max])
 
