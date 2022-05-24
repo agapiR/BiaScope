@@ -378,8 +378,16 @@ def store_node_score_list(networkDropdown, embeddingDropdown,
         params = {"nrHops": nrHops}
         node_to_score = get_scores(fairnessNotion, params, preprocessed_data_dir)
     
-    # update node-score list
-    node_list_dict = {'Node IDs': node_to_score.keys(), 'Scores': [round(s,2) for s in node_to_score.values()]}
+    ## update node-score list
+    node_ids = list(node_to_score.keys())
+    scores = [round(s,2) for s in node_to_score.values()]
+    # get indices of scores sorted in descending order
+    idx_sort_by_score = np.argsort(-1*np.array(scores))
+    # sort nodes and scores:
+    node_ids_sorted = [node_ids[idx] for idx in idx_sort_by_score]
+    scores_sorted = [scores[idx] for idx in idx_sort_by_score]
+    # save list data in df
+    node_list_dict = {'Node IDs': node_ids_sorted, 'Scores': scores_sorted}
     node_list = pd.DataFrame(data=node_list_dict)
 
     return node_list.to_dict('records')
@@ -481,10 +489,26 @@ def updateLegend(fairnessNotion):
 # Update Interactive Table
 @callback(
     Output('nodeList', 'data'),
+    Output('nodeList', 'selected_rows'),
+    State('nodeList', 'selected_rows'),
     Input('node-score-list', 'data')
 )
-def updateNodeList(node_score_list):
-    return node_score_list
+def updateNodeList(selectedRow, node_score_list):
+    # # if: a row is already selected, then do not change the selection
+    # if selectedRow:
+    #     row = selectedRow
+    # # else: select the first row of the table.
+    # else:
+    #     first_table_tuple = node_score_list[0]
+    #     node_id_to_be_selected = first_table_tuple['Node IDs']
+    #     node_idx_to_be_selected = int(0) #(I don't now how to find this)???
+    #     row = [node_idx_to_be_selected]
+
+    # Selct the first entry of the table.
+    # Selects the most unfair node, assuming sorted table.
+    row = [0]
+
+    return node_score_list, row
 
 # @callback(
 #     Output('nodeList', 'data'),
