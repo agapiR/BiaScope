@@ -642,7 +642,7 @@ def updateView(graph_data, node_features, node_score_list,
     # get local topology and attributes
     if fairnessNotion=='Group (Fairwalk)':
         recommended = node_features[str(focal_node)]["recommended"]
-        recommended_topk = recommended[0:int(kVal)]
+        recommended_topk = recommended[0:int(kVal)+1]
         local_network, local_ids = get_induced_subgraph(G, recommended_topk)
         attributes = [int(node_features[idx][attribute_type]) for idx in local_ids]
         topology_title = "Top-{} proximal nodes in the embedding".format(kVal)
