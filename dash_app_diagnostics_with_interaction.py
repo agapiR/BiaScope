@@ -61,7 +61,7 @@ graph_metadata = {"Facebook": {"edgelist": "edgelists/facebook_combined.edgelist
 
 ## Import descriptive text
 sys.path.insert(0, "description-txt/")
-import diagnostics_description
+import diagnostics_description, footer
 
 ## View Layout
 app = Dash(__name__)
@@ -238,9 +238,11 @@ diagnostics_layout = html.Div(
         html.Div(
             children = html.Div([html.Center(html.A(href="/", children="Back", className="button"))]),
             className='main view',
-            style={'width': '10%', 'display': 'inline-block'}
+            style={'width': '10%', 'display': 'inline-block', 'paddingTop': '25px',
+            'paddingBottom': '50px','paddingRight': '0px','paddingLeft': '0px'}
         ),
-
+        footer.conclusion_div,
+        # Store Components
         # dcc.Store inside the user's current browser session
         #dcc.Store(id='network-name', data=[], storage_type='memory'), # 'local' or 'session'
         #dcc.Store(id='embedding-name', data=[], storage_type='memory'),

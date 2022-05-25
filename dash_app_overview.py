@@ -24,7 +24,7 @@ from utilities import (unfairness_scores,
 
 sys.path.insert(0, "description-txt/")
 import overview_description
-import overview_conclusion
+import footer
 
 app = Dash(__name__)
 app.title = "InfoViz-Final"
@@ -32,8 +32,8 @@ app.title = "InfoViz-Final"
 overview_layout = html.Div(
     children=[
         overview_description.description,
-        html.P("Begin by selecting the network/graph (see 'Data') to analyze along with a fairness notion (See 'Fairness of Graph Embeddings'). "),
-        html.Div([
+        html.P("Begin by selecting the network/graph to analyze along with a fairness notion. "),
+        html.Div([  
                     html.Div([
                         html.H3('Network:'),
                     ],style={'align-items':'center','paddingRight': '10px','paddingTop': '7px','display': 'inline-block'}),
@@ -43,7 +43,7 @@ overview_layout = html.Div(
                     ],style={'display': 'inline-block','vertical-align': 'middle','padding-top': '0px'}),
                 ],style=dict(display='flex')),
                 html.Div( children = [
-                    html.H2(children='Statistical summary of the network', style={'padding': '10px'}),
+                    html.H2(children='Statistical Summary of the Network', style={'padding': '10px'}),
                     html.P("The table on the left provides key summary statistics for the network chosen and the bar chart on the right \
                         is a histogram of the number of edges connected to each node, also known as a degree distribution."),
                     html.Div(
@@ -96,6 +96,7 @@ overview_layout = html.Div(
                     )
         ]),
         html.Div([
+            html.H2(children='Comparison View', style={'padding': '10px'}),
             html.Div([
                 html.H3('Fairness notion:'),
             ],style={'align-items':'center','paddingRight': '10px','paddingTop': '7px','display': 'inline-block', 'margin-left': '0px'}),
@@ -207,8 +208,9 @@ overview_layout = html.Div(
             className="title six columns",
             style={'width': '49%', 'display': 'inline-block'}
         ),
-        dcc.Store(id='graph-data-overview', data=[], storage_type='memory'),
-        overview_conclusion.conclusion_div
+        footer.conclusion_div,
+        # Store Components
+        dcc.Store(id='graph-data-overview', data=[], storage_type='memory')
     ]
 )
 app.layout = overview_layout
