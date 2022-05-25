@@ -1,9 +1,9 @@
-# CS 7250 Final Project Team 4
+# BiaScope
 Bruno Scarone, Agapi Rissaki, David Liu
 
-Our visualization is deployed at: [https://infoviz-final.herokuapp.com/](https://infoviz-final.herokuapp.com/)
+BiaScope is deployed at: [https://biascope.herokuapp.com/](https://biascope.herokuapp.com/)
 
-## Code Citations
+## Development
 Our webpage is built with [Dash and Plotly](https://dash.plotly.com/). In particular we consulted the following resources. 
 * [Networks with Plotly](https://plotly.com/python/network-graphs/)
 * [Bar charts with Plotly](https://plotly.com/python/bar-charts/)
