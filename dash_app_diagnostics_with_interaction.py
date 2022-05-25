@@ -211,7 +211,7 @@ diagnostics_layout = html.Div(
                                     )
                 ]),
                 className='main view',
-                style={'alignItems':'center', 'width': '20%', 'paddingRight': '20px', 'paddingBottom': '20px', 'paddingTop': '55px', 'display': 'inline-block'}
+                style={'alignItems':'center', 'width': '15%', 'paddingRight': '20px', 'paddingLeft': '5px','paddingBottom': '20px', 'paddingTop': '55px', 'display': 'inline-block'}
             ),
             html.Div(
                 dcc.Loading(
@@ -454,7 +454,7 @@ def updateLegend(fairnessNotion):
 
     if fairnessNotion=='Group (Fairwalk)':
         legend_ind_fairness = {'display': 'none'}
-        legend_group_fairness = {'display': 'inline-block','paddingLeft':'35px','paddingRight':'35px','paddingBottom':'10px','paddingTop':'55px'}
+        legend_group_fairness = {'display': 'inline-block','paddingLeft':'35px','paddingRight':'35px','paddingBottom':'0px','paddingTop':'160px'}
     else: #'Individual (InFoRM)'
         legend_group_fairness = {'display': 'none'}
         legend_ind_fairness = {'display': 'inline-block','paddingLeft':'35px','paddingRight':'35px','paddingBottom':'0px','paddingTop':'160px'}
