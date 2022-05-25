@@ -27,8 +27,8 @@ description = html.Div([
 	#
 	html.H3("Configuration and Filtering"),
 	html.P("The “node-score” interactive table supports filtering as well as sorting in ascending or descending order with respect to either the node id \
-		or the score value. Sort the entries by clicking on the arrows displayed in the header. Search by typing on the filtering cells. \
-		To elect the focal node, use the radio buttons on the left of each row." ),
+		or the score value. Sort the entries by clicking on the arrows displayed in the header. Search by typing on the filter cells. \
+		To select the focal node, use the radio buttons on the left of each row." ),
 
 	#
 	html.H3("Linked Views"),
