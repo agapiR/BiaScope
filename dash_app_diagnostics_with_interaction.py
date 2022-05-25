@@ -296,7 +296,7 @@ def store_graph_data(network_name):
 )
 def store_node_features(network_name, embedding_name):
     # Configure data sources
-    preprocessed_data_dir = 'embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv'.format(network_name,
+    preprocessed_data_dir = 'embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores_with_gender.csv'.format(network_name,
                                                                                                         embedding_name,
                                                                                                         network_name,
                                                                                                         embedding_name)
@@ -336,7 +336,7 @@ def store_node_features(network_name, embedding_name):
 def store_node_score_list(networkDropdown, embeddingDropdown,
                 fairnessNotion, sensitiveAttr, sensitiveAttrVal, kVal, nrHops):
     # Configure data sources
-    preprocessed_data_dir = 'embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv'.format(  networkDropdown,
+    preprocessed_data_dir = 'embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores_with_gender.csv'.format(  networkDropdown,
                                                                                                 embeddingDropdown,
                                                                                                 networkDropdown,
                                                                                                 embeddingDropdown)
@@ -575,7 +575,7 @@ def updateView(graph_data, node_features, node_score_list,
     # Identify callback source
     ctx = dash.callback_context
     trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
-    print("updateView triggered by:", trigger_id)
+    #print("updateView triggered by:", trigger_id)
 
 
     # UPDATE LOGIC:

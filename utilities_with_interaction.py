@@ -301,15 +301,18 @@ def draw_2d_scale(array2d_outer, array2d_inner, show_inner=False):
     delta_y = np.abs(y_min - y_max)
     padding_x = delta_x*0.05
     padding_y = delta_y*0.05
-    padding = max(padding_x, padding_y)
     # pad axis to get equal length
     if delta_x>delta_y:
         padding_y = ((delta_x-delta_y)+2*padding_x)/2
     else:
         padding_x = ((delta_y-delta_x)+2*padding_y)/2
     fig = go.Figure(go.Scatter(
-        x=[x_min-padding_x, x_min-padding_x, x_max+padding_x, x_max+padding_x, x_min-padding_x], 
-        y=[y_min-padding_y, y_max+padding_y, y_max+padding_y, y_min-padding_y, y_min-padding_y], 
+        x=[max(x_min-padding_x, X_min), max(x_min-padding_x, X_min), 
+           min(x_max+padding_x, X_max), min(x_max+padding_x, X_max), 
+           max(x_min-padding_x, X_min)], 
+        y=[max(y_min-padding_y, Y_min), min(y_max+padding_y, Y_max), 
+           min(y_max+padding_y, Y_max), max(y_min-padding_y, Y_min),
+           max(y_min-padding_y, Y_min)], 
         fill="toself",
         name = "displayed area",
         hoverinfo='none',
@@ -331,7 +334,7 @@ def draw_2d_scale(array2d_outer, array2d_inner, show_inner=False):
         hoverinfo='none',
         name = "all points",
         marker=dict(
-            size=1,
+            size=2,
             line_width=0,
             color= '#000000' )
             )
@@ -345,7 +348,7 @@ def draw_2d_scale(array2d_outer, array2d_inner, show_inner=False):
             hoverinfo='none',
             name = "displayed points",
             marker=dict(
-                size=2,
+                size=3,
                 line_width=0,
                 color='rgba(255, 0, 0, 1)')
                 )
@@ -353,8 +356,13 @@ def draw_2d_scale(array2d_outer, array2d_inner, show_inner=False):
 
     delta_X = np.abs(X_min - X_max)
     delta_Y = np.abs(Y_min - Y_max)
-    padding_X = delta_X*0.05
-    padding_Y = delta_Y*0.05
+    padding_X = delta_X*0.03
+    padding_Y = delta_Y*0.03
+    # pad axis to get equal length
+    if delta_X>delta_Y:
+        padding_Y = ((delta_X-delta_Y)+2*padding_X)/2
+    else:
+        padding_X = ((delta_Y-delta_X)+2*padding_Y)/2
     fig.layout=go.Layout(
                 title="",
                 titlefont_size=16,
