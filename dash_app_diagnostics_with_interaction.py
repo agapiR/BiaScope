@@ -600,7 +600,8 @@ def updateView(graph_data, node_features, node_score_list,
     # Identify callback source
     ctx = dash.callback_context
     trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
-    #print("Trigger: " + trigger_id)
+    print("updateView triggered by:", trigger_id)
+
 
     # UPDATE LOGIC:
     # 1) when we change network or embedding algo or focal node or fairness config brush selection should be cleared
@@ -712,6 +713,46 @@ def updateView(graph_data, node_features, node_score_list,
     figScale = draw_2d_scale(projections, local_projections, show_inner=True)
 
     return figGraph, figEmb, figScale
+
+
+# @callback(
+#     Output('embeddingScale', 'figure'),
+#     [Input('graph-data', 'data'),
+#      Input('node-features', 'data'),
+#      Input('node-score-list', 'data'),
+#      # I dont know what we need from bellow
+#      Input('embeddingDropdown', 'value'),
+#      Input('networkDropdown_d', 'value'),
+#      Input('projectionDropdown', 'value'),
+#      # Focal selection
+#      Input('nodeList', 'selected_rows'),
+#      # fairness config
+#      Input('fairnessNotion_d', 'value'),
+#      Input('sensitiveAttr_d', 'value'),
+#      Input('sensitiveAttrVal_d', 'value'),
+#      Input('kVal_d', 'value'),
+#      Input('nrHops_d', 'value')
+#     ]
+# )
+# def updateScaleLegend(graph_data, node_features, node_score_list,
+#                     embeddingDropdown, networkDropdown, projectionDropdown,
+#                     selectedRow,
+#                     fairnessNotion, sensitiveAttr, sensitiveAttrVal, kVal, nrHops):
+        
+#     local_projections_x = np.array([float(node_features[idx]['proj_x']) for idx in local_ids])
+#     local_projections_y = np.array([float(node_features[idx]['proj_y']) for idx in local_ids])
+#     local_projections = np.vstack((local_projections_x,local_projections_y))
+
+#     projections_x = np.array([float(node_features[idx]['proj_x']) for idx in node_features.keys()])
+#     projections_y = np.array([float(node_features[idx]['proj_y']) for idx in node_features.keys()])
+#     projections = np.vstack((projections_x,projections_y))
+
+#     figScale = draw_2d_scale(projections, local_projections, show_inner=True)
+
+#     return figScale
+
+
+
 
 # @callback(
 #     Output('overviewDiagnosticsGraph', 'figure'),
