@@ -222,7 +222,7 @@ app.layout = overview_layout
 )
 def store_graph_data_overview(network_name):
     # Configure data sources
-    edgelist_file = "../edgelists/{}".format(get_edgelist_file(network_name))
+    edgelist_file = "edgelists/{}".format(get_edgelist_file(network_name))
     # load new network 
     G = nx.read_edgelist(edgelist_file)
 
@@ -319,7 +319,7 @@ def display_fairness_parameters(networkDropdown, fairnessNotion):
     else:
         if fairnessNotion == 'Group (Fairwalk)':
             # get sensitive attributes
-            config_file = "../embeddings/{}/group_fairness_config.json".format(networkDropdown)
+            config_file = "embeddings/{}/group_fairness_config.json".format(networkDropdown)
             with open(config_file, "r") as configFile:
                 group_fairness_config = json.load(configFile)
 
@@ -360,8 +360,8 @@ def display_fairness_parameters(networkDropdown, fairnessNotion):
     Input('nrHops', 'value')]
 )
 def update_network1_fairness(graph_data, networkDropdown, embDropdownLeft, fairnessNotion, sensitiveAttr, sensitiveAttrVal, kVal, nrHops):
-    edgelist_file = "../edgelists/{}".format(get_edgelist_file(networkDropdown))
-    node_features_file = "../embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv".format(networkDropdown, 
+    edgelist_file = "edgelists/{}".format(get_edgelist_file(networkDropdown))
+    node_features_file = "embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv".format(networkDropdown, 
                                                                                     embDropdownLeft, 
                                                                                     networkDropdown, 
                                                                                     embDropdownLeft)
@@ -370,13 +370,13 @@ def update_network1_fairness(graph_data, networkDropdown, embDropdownLeft, fairn
     if fairnessNotion == 'Individual (InFoRM)':
         params = {"nrHops": nrHops}
         # currently the same as node features file
-        path_fairness_score = "../embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv".format(networkDropdown, 
+        path_fairness_score = "embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv".format(networkDropdown, 
                                                                                     embDropdownLeft, 
                                                                                     networkDropdown, 
                                                                                     embDropdownLeft)
     else: #Group (Fairwalk)
         params = {"attribute": sensitiveAttr, "value": sensitiveAttrVal, "k": kVal}
-        path_fairness_score = "../embeddings/{}/{}/{}_{}_64_embedding_group_fairness_scores.csv".format(networkDropdown, 
+        path_fairness_score = "embeddings/{}/{}/{}_{}_64_embedding_group_fairness_scores.csv".format(networkDropdown, 
                                                                                             embDropdownLeft, 
                                                                                             networkDropdown, 
                                                                                             embDropdownLeft)
@@ -402,8 +402,8 @@ def update_network1_fairness(graph_data, networkDropdown, embDropdownLeft, fairn
     Input('nrHops', 'value')]
 )
 def update_network2_fairness(graph_data, networkDropdown, embDropdownRight, fairnessNotion, sensitiveAttr, sensitiveAttrVal, kVal, nrHops):
-    edgelist_file = "../edgelists/{}".format(get_edgelist_file(networkDropdown))
-    node_features_file = "../embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv".format(networkDropdown, 
+    edgelist_file = "edgelists/{}".format(get_edgelist_file(networkDropdown))
+    node_features_file = "embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv".format(networkDropdown, 
                                                                                             embDropdownRight, 
                                                                                             networkDropdown, 
                                                                                             embDropdownRight)
@@ -412,13 +412,13 @@ def update_network2_fairness(graph_data, networkDropdown, embDropdownRight, fair
     if fairnessNotion == 'Individual (InFoRM)':
         params = {"nrHops": nrHops}
         # currently the same as node features file
-        path_fairness_score = "../embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv".format(networkDropdown, 
+        path_fairness_score = "embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv".format(networkDropdown, 
                                                                                             embDropdownRight, 
                                                                                             networkDropdown, 
                                                                                             embDropdownRight)
     else: #Group (Fairwalk)
         params = {"attribute": sensitiveAttr, "value": sensitiveAttrVal, "k": kVal}
-        path_fairness_score = "../embeddings/{}/{}/{}_{}_64_embedding_group_fairness_scores.csv".format(networkDropdown, 
+        path_fairness_score = "embeddings/{}/{}/{}_{}_64_embedding_group_fairness_scores.csv".format(networkDropdown, 
                                                                                             embDropdownRight, 
                                                                                             networkDropdown, 
                                                                                             embDropdownRight)
@@ -442,7 +442,7 @@ def update_network2_fairness(graph_data, networkDropdown, embDropdownRight, fair
     Input('graph-data-overview', 'data')
 )
 def update_statistical_summary(graph_data):
-    #path = "../edgelists/{}".format(get_edgelist_file(networkDropdown))
+    #path = "edgelists/{}".format(get_edgelist_file(networkDropdown))
 
 
     # get graph

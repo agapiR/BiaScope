@@ -25,12 +25,12 @@ from utilities_with_interaction import (get_egoNet,
                                         get_node_features)
 
 ## Define metadata 
-graph_metadata = {"Facebook": {"edgelist": "../edgelists/facebook_combined.edgelist"},
-                 "LastFM": {"edgelist": "../edgelists/lastfm_asia_edges.edgelist"},
-                 "wikipedia": {"edgelist": "../edgelists/wikipedia.edgelist"},
-                  "protein-protein": {"edgelist": "../edgelists/ppi.edgelist"},
-                  "ca-HepTh": {"edgelist": "../edgelists/ca-HepTh.edgelist"},
-                  "AutonomousSystems": {"edgelist": "../edgelists/AS.edgelist"},
+graph_metadata = {"Facebook": {"edgelist": "edgelists/facebook_combined.edgelist"},
+                 "LastFM": {"edgelist": "edgelists/lastfm_asia_edges.edgelist"},
+                 "wikipedia": {"edgelist": "edgelists/wikipedia.edgelist"},
+                  "protein-protein": {"edgelist": "edgelists/ppi.edgelist"},
+                  "ca-HepTh": {"edgelist": "edgelists/ca-HepTh.edgelist"},
+                  "AutonomousSystems": {"edgelist": "edgelists/AS.edgelist"},
                  }
 
 
@@ -43,11 +43,11 @@ graph_metadata = {"Facebook": {"edgelist": "../edgelists/facebook_combined.edgel
 # embDefault = "Node2Vec"
 
 # graph_dir = graph_metadata[networkDefault]["edgelist"]
-# preprocessed_data_dir = '../embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv'.format(networkDefault,
+# preprocessed_data_dir = 'embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv'.format(networkDefault,
 #                                                                                                         embDefault,
 #                                                                                                         networkDefault,
 #                                                                                                         embDefault)
-# preprocessed_group_fairness_dir = '../embeddings/{}/{}/{}_{}_64_embedding_group_fairness_scores.csv'.format(networkDefault,
+# preprocessed_group_fairness_dir = 'embeddings/{}/{}/{}_{}_64_embedding_group_fairness_scores.csv'.format(networkDefault,
 #                                                                                                             embDefault,
 #                                                                                                             networkDefault,
 #                                                                                                             embDefault)
@@ -296,12 +296,12 @@ def store_graph_data(network_name):
 )
 def store_node_features(network_name, embedding_name):
     # Configure data sources
-    preprocessed_data_dir = '../embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv'.format(network_name,
+    preprocessed_data_dir = 'embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv'.format(network_name,
                                                                                                         embedding_name,
                                                                                                         network_name,
                                                                                                         embedding_name)
     # Configure data sources
-    recommended_nodes_dir = '../embeddings/{}/{}/{}_{}_64_embedding_recommended_nodes.csv'.format(network_name,
+    recommended_nodes_dir = 'embeddings/{}/{}/{}_{}_64_embedding_recommended_nodes.csv'.format(network_name,
                                                                                             embedding_name,
                                                                                             network_name,
                                                                                             embedding_name)
@@ -336,11 +336,11 @@ def store_node_features(network_name, embedding_name):
 def store_node_score_list(networkDropdown, embeddingDropdown,
                 fairnessNotion, sensitiveAttr, sensitiveAttrVal, kVal, nrHops):
     # Configure data sources
-    preprocessed_data_dir = '../embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv'.format(  networkDropdown,
+    preprocessed_data_dir = 'embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv'.format(  networkDropdown,
                                                                                                 embeddingDropdown,
                                                                                                 networkDropdown,
                                                                                                 embeddingDropdown)
-    preprocessed_group_fairness_dir = '../embeddings/{}/{}/{}_{}_64_embedding_group_fairness_scores.csv'.format(  
+    preprocessed_group_fairness_dir = 'embeddings/{}/{}/{}_{}_64_embedding_group_fairness_scores.csv'.format(  
                                                                                                 networkDropdown,
                                                                                                 embeddingDropdown,
                                                                                                 networkDropdown,
@@ -353,8 +353,16 @@ def store_node_score_list(networkDropdown, embeddingDropdown,
         params = {"nrHops": nrHops}
         node_to_score = get_scores(fairnessNotion, params, preprocessed_data_dir)
     
-    # update node-score list
-    node_list_dict = {'Node IDs': node_to_score.keys(), 'Scores': [round(s,2) for s in node_to_score.values()]}
+    ## update node-score list
+    node_ids = list(node_to_score.keys())
+    scores = [round(s,2) for s in node_to_score.values()]
+    # get indices of scores sorted in descending order
+    idx_sort_by_score = np.argsort(-1*np.array(scores))
+    # sort nodes and scores:
+    node_ids_sorted = [node_ids[idx] for idx in idx_sort_by_score]
+    scores_sorted = [scores[idx] for idx in idx_sort_by_score]
+    # save list data in df
+    node_list_dict = {'Node IDs': node_ids_sorted, 'Scores': scores_sorted}
     node_list = pd.DataFrame(data=node_list_dict)
 
     return node_list.to_dict('records')
@@ -404,7 +412,7 @@ def display_fairness_parameters(networkDropdown, fairnessNotion):
     else:
         if fairnessNotion == 'Group (Fairwalk)':
             # get sensitive attributes
-            config_file = "../embeddings/{}/group_fairness_config.json".format(networkDropdown)
+            config_file = "embeddings/{}/group_fairness_config.json".format(networkDropdown)
             with open(config_file, "r") as configFile:
                 group_fairness_config = json.load(configFile)
 
@@ -456,10 +464,26 @@ def updateLegend(fairnessNotion):
 # Update Interactive Table
 @callback(
     Output('nodeList', 'data'),
+    Output('nodeList', 'selected_rows'),
+    State('nodeList', 'selected_rows'),
     Input('node-score-list', 'data')
 )
-def updateNodeList(node_score_list):
-    return node_score_list
+def updateNodeList(selectedRow, node_score_list):
+    # # if: a row is already selected, then do not change the selection
+    # if selectedRow:
+    #     row = selectedRow
+    # # else: select the first row of the table.
+    # else:
+    #     first_table_tuple = node_score_list[0]
+    #     node_id_to_be_selected = first_table_tuple['Node IDs']
+    #     node_idx_to_be_selected = int(0) #(I don't now how to find this)???
+    #     row = [node_idx_to_be_selected]
+
+    # Selct the first entry of the table.
+    # Selects the most unfair node, assuming sorted table.
+    row = [0]
+
+    return node_score_list, row
 
 # @callback(
 #     Output('nodeList', 'data'),
@@ -480,11 +504,11 @@ def updateNodeList(node_score_list):
 
 #     # Configure data sources
 #     graph_dir = graph_metadata[networkDropdown]["edgelist"]
-#     preprocessed_data_dir = '../embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv'.format(  networkDropdown,
+#     preprocessed_data_dir = 'embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv'.format(  networkDropdown,
 #                                                                                                 embeddingDropdown,
 #                                                                                                 networkDropdown,
 #                                                                                                 embeddingDropdown)
-#     preprocessed_group_fairness_dir = '../embeddings/{}/{}/{}_{}_64_embedding_group_fairness_scores.csv'.format(  
+#     preprocessed_group_fairness_dir = 'embeddings/{}/{}/{}_{}_64_embedding_group_fairness_scores.csv'.format(  
 #                                                                                                 networkDropdown,
 #                                                                                                 embeddingDropdown,
 #                                                                                                 networkDropdown,
@@ -551,7 +575,8 @@ def updateView(graph_data, node_features, node_score_list,
     # Identify callback source
     ctx = dash.callback_context
     trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
-    #print("Trigger: " + trigger_id)
+    print("updateView triggered by:", trigger_id)
+
 
     # UPDATE LOGIC:
     # 1) when we change network or embedding algo or focal node or fairness config brush selection should be cleared
@@ -664,6 +689,46 @@ def updateView(graph_data, node_features, node_score_list,
 
     return figGraph, figEmb, figScale
 
+
+# @callback(
+#     Output('embeddingScale', 'figure'),
+#     [Input('graph-data', 'data'),
+#      Input('node-features', 'data'),
+#      Input('node-score-list', 'data'),
+#      # I dont know what we need from bellow
+#      Input('embeddingDropdown', 'value'),
+#      Input('networkDropdown_d', 'value'),
+#      Input('projectionDropdown', 'value'),
+#      # Focal selection
+#      Input('nodeList', 'selected_rows'),
+#      # fairness config
+#      Input('fairnessNotion_d', 'value'),
+#      Input('sensitiveAttr_d', 'value'),
+#      Input('sensitiveAttrVal_d', 'value'),
+#      Input('kVal_d', 'value'),
+#      Input('nrHops_d', 'value')
+#     ]
+# )
+# def updateScaleLegend(graph_data, node_features, node_score_list,
+#                     embeddingDropdown, networkDropdown, projectionDropdown,
+#                     selectedRow,
+#                     fairnessNotion, sensitiveAttr, sensitiveAttrVal, kVal, nrHops):
+        
+#     local_projections_x = np.array([float(node_features[idx]['proj_x']) for idx in local_ids])
+#     local_projections_y = np.array([float(node_features[idx]['proj_y']) for idx in local_ids])
+#     local_projections = np.vstack((local_projections_x,local_projections_y))
+
+#     projections_x = np.array([float(node_features[idx]['proj_x']) for idx in node_features.keys()])
+#     projections_y = np.array([float(node_features[idx]['proj_y']) for idx in node_features.keys()])
+#     projections = np.vstack((projections_x,projections_y))
+
+#     figScale = draw_2d_scale(projections, local_projections, show_inner=True)
+
+#     return figScale
+
+
+
+
 # @callback(
 #     Output('overviewDiagnosticsGraph', 'figure'),
 #     Output('overviewDiagnosticsEmb', 'figure'),
@@ -702,11 +767,11 @@ def updateView(graph_data, node_features, node_score_list,
 
 #     # Configure data sources
 #     graph_dir = graph_metadata[networkDropdown]["edgelist"]
-#     preprocessed_data_dir = '../embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv'.format(  networkDropdown,
+#     preprocessed_data_dir = 'embeddings/{}/{}/{}_{}_64_embedding_node_features_InFoRM_scores.csv'.format(  networkDropdown,
 #                                                                                                 embeddingDropdown,
 #                                                                                                 networkDropdown,
 #                                                                                                 embeddingDropdown)
-#     preprocessed_group_fairness_dir = '../embeddings/{}/{}/{}_{}_64_embedding_group_fairness_scores.csv'.format(  
+#     preprocessed_group_fairness_dir = 'embeddings/{}/{}/{}_{}_64_embedding_group_fairness_scores.csv'.format(  
 #                                                                                                 networkDropdown,
 #                                                                                                 embeddingDropdown,
 #                                                                                                 networkDropdown,
