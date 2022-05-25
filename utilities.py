@@ -126,8 +126,7 @@ def group_unfairness_score(G, Y, W, node_idx, node_features, S, z, k):
     # accesses for nodes that do not have an S feature value
     # node_features is not ordered
     
-    
-    rho_u_z = [v for v in rho_u_id if v in list(node_features[:,0]) and node_features[list(node_features[:,0]).index(dict_node_id2idx[v]),S] == z]  #  attr(v,S) == z
+    rho_u_z = [v for v in rho_u_id if int(v) in list(node_features[:,0]) and node_features[list(node_features[:,0]).index(int(v)),S] == z]  #  attr(v,S) == z
 
     if rho_u_id == []:
         # check if assigning 0 for this case makes sense

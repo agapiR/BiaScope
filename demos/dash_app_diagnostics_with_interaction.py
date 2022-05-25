@@ -104,14 +104,6 @@ diagnostics_layout = html.Div(
             # div for fairness parameters - initialization
             html.Div(children=[
                 html.Div([
-                    # html.Div([
-                    #         html.Div([
-                    #             html.H4('Number of hops:'),
-                    #         ],style={'display': 'inline-block','alignItems':'center','paddingRight': '10px'}),
-                    #         html.Div([
-                    #             dcc.Dropdown(options=[], value='', id='nrHops_d', clearable=False, style={'width':'60px','alignItems':'center'}),
-                    #         ],style={'display': 'inline-block','verticalAlign': 'middle','paddingTop': '3px'}),
-                    #     ],id='indFairnessParams_d',style={'display': 'none'}),
                     html.Div([
                         html.Div([
                             html.H4('Number of hops:'),
@@ -121,30 +113,9 @@ diagnostics_layout = html.Div(
                             className="fa fa-question-circle tooltip",
                             style={'display': 'inline-block'}),
                         html.Div([
-                            # dcc.Dropdown(options=[], value='', id='nrHops', clearable=False, style={'width':'60px','align-items':'center'}),
                             dcc.Slider(id='nrHops_d', min=1, max=2, step=1, value=1)
                         ],style={'width':'150px','height':'11px','display': 'inline-block','padding-left': '5px'}),
                     ],id='indFairnessParams_d',style={'display': 'none'}),
-                    # html.Div([
-                    #         html.Div([
-                    #             html.H4('Node attribute:'),
-                    #         ],style={'alignItems':'center','paddingRight': '10px','display': 'inline-block'}),
-                    #         html.Div([
-                    #             dcc.Dropdown(options=[], value='', id='sensitiveAttr_d', clearable=False, style={'width':'200px','alignItems':'center'}),
-                    #         ],style={'display': 'inline-block','verticalAlign': 'middle','paddingTop': '0px'}),
-                    #         html.Div([
-                    #             html.H4('Attribute value:'),
-                    #         ],style={'alignItems':'center', 'paddingLeft': '150px', 'paddingRight': '10px','display': 'inline-block'}),
-                    #         html.Div([
-                    #             dcc.Dropdown(options=[], value='', id='sensitiveAttrVal_d', clearable=False, style={'width':'200px','alignItems':'center'}),
-                    #         ],style={'display': 'inline-block','verticalAlign': 'middle','paddingTop': '0px'}),
-                    #         html.Div([
-                    #             html.H4('Value of k:'),
-                    #         ],style={'alignItems':'center', 'paddingLeft': '150px', 'paddingRight': '10px','display': 'inline-block'}),
-                    #         html.Div([
-                    #             dcc.Dropdown(options=[], value='', id='kVal_d', clearable=False, style={'width':'200px','alignItems':'center'}),
-                    #         ],style={'display': 'inline-block','verticalAlign': 'middle','paddingTop': '0px'})
-                    #     ],id='groupFairnessParams_d',style={'display': 'none'})
                     html.Div([
                         html.Div([
                             html.H4('Node attribute:'),
@@ -176,37 +147,39 @@ diagnostics_layout = html.Div(
                     ],id='groupFairnessParams_d',style={'display': 'none'})
                 ])
                 ],id='fairnessParams_d'),
-            ],style={'alignItems':'center','padding': 20,'display': 'inline-block'}),
+            ],style={'alignItems':'center','padding': 20,'display': 'block'}),
         html.Div([
-                html.Div([],style={'display': 'inline-block','paddingLeft': 300}), # For shifting the legend
-                html.Div(id='legend-indfairness',className="legend",
-                    children=[
-                        html.H2('Legend'),
-                        html.H3(children=['The focal node is highlighted in ',html.Span('red',style={"backgroundColor":"#de2d26","color":"#ededed"}),' and increased in ', html.Span('size',style={'fontSize': 24}),'.']),
-                        html.H3(children=['The 1-hop neighbors of the focal node are colored in ',html.Span('coral',style={"backgroundColor":"#fcae91"}) ,', while the 2-hop neighbors in ',html.Span('light salmon',style={"backgroundColor":"#fee5d9"}),'.'])
-                    ],
-                    style={'display': 'inline-block','paddingLeft':'0px','paddingBottom':'0px'}),
-        ],style={'display': 'block','padding': 0}),
-        html.Div([
-                html.Div([],style={'display': 'inline-block','paddingLeft': 300}), # For shifting the legend
-                html.Div(id='legend-groupfairness',className="legend",
-                    children=[
-                        html.H2('Legend'),
-                        html.H3(children=['The focal node is increased in ',html.Span('size',style={'fontSize': 24}),' and its contour is highlighted in ',html.Span('red',style={"backgroundColor":"#de2d26","color":"#ededed"}),'.']),
-                        html.H3(children=['The 1-hop neighbors of the focal node, together with itself, are colored according to their gender value: ', html.Span('yellow',style={"backgroundColor":"#ffff99"}),' for gender 0 and ',html.Span('blue',style={"backgroundColor":"#386cb0","color":"#ededed"}),' for gender 1.'])
-                    ],
-                style={'display': 'none','paddingLeft':'0px','paddingBottom':'0px'}),
-        ],style={'display': 'block','padding': 0}),
-        html.Div(
-                dcc.Loading(
-                id="loading-scale",
-                type="circle",
-                color="#800020",
-                children= dcc.Graph(id='embeddingScale', config={'displayModeBar': False}),
-                ),
-                className='main view',
-                style={'width': '40%', 'display': 'inline-block', 'paddingTop':'25px'}       
-            ),
+            # html.Div([
+                    # html.Div([],style={'display': 'inline-block','paddingLeft': 0}), # For shifting the legend
+            html.Div(id='legend-indfairness',className="legend",
+                children=[
+                    html.H2('Legend'),
+                    html.H3(children=['The focal node is highlighted in ',html.Span('red',style={"backgroundColor":"#de2d26","color":"#ededed"}),' and increased in ', html.Span('size',style={'fontSize': 24}),'.']),
+                    html.H3(children=['The 1-hop neighbors of the focal node are colored in ',html.Span('coral',style={"backgroundColor":"#fcae91"}) ,', while the 2-hop neighbors in ',html.Span('light salmon',style={"backgroundColor":"#fee5d9"}),'.'])
+                ],
+                style={'width': '60%','display': 'inline-block','paddingLeft':'0px','paddingBottom':'0px'}),
+            # ],style={'width': '65%','display': 'block','padding': 0}),
+            # html.Div([
+                    # html.Div([],style={'display': 'inline-block','paddingLeft': 300}), # For shifting the legend
+            html.Div(id='legend-groupfairness',className="legend",
+                children=[
+                    html.H2('Legend'),
+                    html.H3(children=['The focal node is increased in ',html.Span('size',style={'fontSize': 24}),' and its contour is highlighted in ',html.Span('red',style={"backgroundColor":"#de2d26","color":"#ededed"}),'.']),
+                    html.H3(children=['The 1-hop neighbors of the focal node, together with itself, are colored according to their gender value: ', html.Span('yellow',style={"backgroundColor":"#ffff99"}),' for gender 0 and ',html.Span('blue',style={"backgroundColor":"#386cb0","color":"#ededed"}),' for gender 1.'])
+                ],
+            style={'width': '60%','display': 'none','paddingLeft':'0px','paddingBottom':'0px'}),
+            # ],style={'width': '65%','display': 'block','padding': 0}),
+            html.Div(
+                    dcc.Loading(
+                    id="loading-scale",
+                    type="circle",
+                    color="#800020",
+                    children= dcc.Graph(id='embeddingScale', config={'displayModeBar': False}),
+                    ),
+                    className='main view',
+                    style={'width': '40%', 'display': 'inline-block', 'paddingTop':'0px'}       
+                )            
+        ],style={'display': 'flex','padding':'0px 25px'}),
         html.Div([
             html.Div(
                 dbc.Container([
@@ -238,7 +211,7 @@ diagnostics_layout = html.Div(
                                     )
                 ]),
                 className='main view',
-                style={'alignItems':'center', 'width': '12%', 'paddingRight': '20px', 'paddingBottom': '20px', 'paddingTop': '55px', 'display': 'inline-block'}
+                style={'alignItems':'center', 'width': '20%', 'paddingRight': '20px', 'paddingBottom': '20px', 'paddingTop': '55px', 'display': 'inline-block'}
             ),
             html.Div(
                 dcc.Loading(
@@ -260,11 +233,13 @@ diagnostics_layout = html.Div(
                 className='main view',
                 style={'width': '40%', 'display': 'inline-block', 'paddingTop':'25px'}       
             )
-        ],style=dict(display='flex')),
+        ],style={'display': 'flex','padding':'0px 25px'}
+        ),
         html.Div(
             children = html.Div([html.Center(html.A(href="/", children="Back", className="button"))]),
             className='main view',
-            style={'width': '10%', 'display': 'inline-block'}),
+            style={'width': '10%', 'display': 'inline-block'}
+        ),
 
         # dcc.Store inside the user's current browser session
         #dcc.Store(id='network-name', data=[], storage_type='memory'), # 'local' or 'session'
@@ -471,10 +446,10 @@ def updateLegend(fairnessNotion):
 
     if fairnessNotion=='Group (Fairwalk)':
         legend_ind_fairness = {'display': 'none'}
-        legend_group_fairness = {'display': 'inline-block','paddingLeft':'35px','paddingRight':'35px','paddingBottom':'10px','paddingTop':'15px'}
+        legend_group_fairness = {'display': 'inline-block','paddingLeft':'35px','paddingRight':'35px','paddingBottom':'10px','paddingTop':'55px'}
     else: #'Individual (InFoRM)'
         legend_group_fairness = {'display': 'none'}
-        legend_ind_fairness = {'display': 'inline-block','paddingLeft':'35px','paddingRight':'35px','paddingBottom':'0px','paddingTop':'15px'}
+        legend_ind_fairness = {'display': 'inline-block','paddingLeft':'35px','paddingRight':'35px','paddingBottom':'0px','paddingTop':'160px'}
 
     return legend_ind_fairness, legend_group_fairness
 
