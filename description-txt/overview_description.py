@@ -5,10 +5,15 @@ description = html.Div([
 		#
 		#
 		html.Ul([
+			html.Li([html.A("Demo Video", href="#demo")]),
 			html.Li([html.A("Description", href="#description")]),
 			html.Li([html.A("Overview", href="#visualization")])
 			]),
 	#
+	#
+	html.H1("Demo Video", id="demo"),
+	html.Video(controls=True, width=500, children=[
+		html.Source(src="/demo.mp4", type="video/mp4")]),
 	#
 	html.H1("Description", id="description"),
 	html.H3("Graph Embeddings"),
