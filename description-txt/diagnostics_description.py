@@ -2,7 +2,6 @@ from dash import Dash, html, dcc, Input, Output, State, callback
 
 description = html.Div([
 		html.H1("BiaScope: Visual Unfairness Diagnosis for Graph Embeddings"),
-		html.P("Agapi Rissaki, Bruno Scarone, David Liu"),
 		#
 		#
 		#
