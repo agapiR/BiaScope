@@ -1,5 +1,4 @@
 # BiaScope
-Bruno Scarone, Agapi Rissaki, David Liu
 
 BiaScope is deployed at: [https://biascope.herokuapp.com/](https://biascope.herokuapp.com/)
 
