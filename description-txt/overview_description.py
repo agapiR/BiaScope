@@ -12,8 +12,8 @@ description = html.Div([
 	#
 	#
 	html.H1("Demo Video", id="demo"),
-	html.Video(controls=True, width=500, children=[
-		html.Source(src="/demo.mp4", type="video/mp4")]),
+	html.Video(controls=True, width=500, preload="True", children=[
+		html.Source(src="https://github.com/agapiR/BiaScope/raw/master/demo.mp4", type="video/mp4")]),
 	#
 	html.H1("Description", id="description"),
 	html.H3("Graph Embeddings"),
